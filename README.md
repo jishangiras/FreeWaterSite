@@ -1,10 +1,10 @@
-# Free Water Map
+# Free Water Site
 
-![Free Water Map Logo](./images/logo.svg)
+![Free Water Site Logo](./images/logo.svg)
 
 ## Overview
 
-Free Water Map is an interactive web application designed to help users find free drinking water locations using OpenStreetMap and Google Street View. The project is hosted on Google Cloud Platform (GCP) using the Free Tier, with a custom domain `freewatersite.org`.
+Free Water Site is an interactive web application designed to help users find free drinking water locations using OpenStreetMap.
 
 ## Features
 
