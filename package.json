@@ -1,0 +1,27 @@
+{
+  "name": "freewatersite",
+  "version": "1.0.0",
+  "description": "Free Water Site is an interactive web application designed to help users find free drinking water locations using OpenStreetMap and Google Street View.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp"
+  },
+  "keywords": [
+    "water",
+    "map",
+    "free",
+    "drinking water"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "del": "^7.1.0",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-html-replace": "^1.6.2",
+    "gulp-htmlmin": "^5.0.1",
+    "gulp-uglify": "^3.0.2"
+  }
+}
