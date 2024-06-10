@@ -3,17 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Water Site</title>
+    <title>FreeWaterSite | Find Free Drinking Water Locations</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+
+    <!-- Meta Tags for SEO -->
+    <meta name="description" content="FreeWaterSite helps you find free drinking water locations near you using OpenStreetMap and Google Street View. Search for water sources and get directions easily.">
+    <meta name="keywords" content="free water, drinking water, water sources, OpenStreetMap, Google Street View, water locator, travel, hydration">
+    <meta name="author" content="Your Name">
+    <meta property="og:title" content="FreeWaterSite | Find Free Drinking Water Locations">
+    <meta property="og:description" content="FreeWaterSite helps you find free drinking water locations near you using OpenStreetMap and Google Street View. Search for water sources and get directions easily.">
+    <meta property="og:image" content="images/Free-water-site-logo.png">
+    <meta property="og:url" content="https://freewatersite.org/">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FreeWaterSite | Find Free Drinking Water Locations">
+    <meta name="twitter:description" content="FreeWaterSite helps you find free drinking water locations near you using OpenStreetMap and Google Street View. Search for water sources and get directions easily.">
+    <meta name="twitter:image" content="images/Free-water-site-logo.png">
+
+    <!-- Stylesheets -->
     <!-- build:css -->
     <link rel="stylesheet" href="css/styles.css">
     <!-- endbuild -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@700&display=swap" rel="stylesheet">
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "https://freewatersite.org/",
+      "name": "FreeWaterSite",
+      "description": "FreeWaterSite helps you find free drinking water locations near you using OpenStreetMap and Google Street View. Search for water sources and get directions easily.",
+      "publisher": {
+        "@type": "Non Profit",
+        "name": "FreeWaterSite"
+      },
+      "image": "https://freewatersite.org/images/Free-water-site-logo.png"
+    }
+    </script>
 </head>
 <body>
-     <div id="logoContainer">
-        <img src="images/Free-water-site-logo.png" alt="Logo" id="logo">
+    <div id="logoContainer">
+        <img src="images/Free-water-site-logo.png" alt="FreeWaterSite Logo" id="logo">
     </div>
     <div id="searchContainer">
         <input type="text" id="searchInput" placeholder="Enter a location..." autocomplete="off">
@@ -28,5 +60,14 @@
     <!-- build:js -->
     <script src="js/scripts.js"></script>
     <!-- endbuild -->
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-41CD361MXL"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-41CD361MXL');
+    </script>
 </body>
 </html>

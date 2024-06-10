@@ -1,5 +1,5 @@
 import gulp from 'gulp';
-import uglify from 'gulp-uglify';
+import terser from 'gulp-terser'; // Use gulp-terser instead of gulp-uglify
 import cleanCSS from 'gulp-clean-css';
 import htmlmin from 'gulp-htmlmin';
 import concat from 'gulp-concat';
@@ -35,7 +35,7 @@ async function clean() {
 function scripts() {
     return gulp.src(paths.scripts.src)
         .pipe(concat('main.min.js'))
-        .pipe(uglify())
+        .pipe(terser()) // Use terser for minifying and obfuscating
         .pipe(gulp.dest(paths.scripts.dest));
 }
 
