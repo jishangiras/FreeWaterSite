@@ -63,8 +63,9 @@ body.has-map-results #appHeader {
 #brand {
     display: inline-flex;
     align-items: center;
-    flex: 0 0 auto;
-    min-width: 180px;
+    flex: 0 1 auto;       /* can shrink when header is tight */
+    min-width: 0;         /* allow shrinking below natural size */
+    overflow: hidden;     /* clip the logo rather than overflow */
     color: #12243a;
     text-decoration: none;
 }
@@ -72,6 +73,7 @@ body.has-map-results #appHeader {
 #logo {
     height: 38px;
     width: auto;
+    flex-shrink: 0;       /* the IMG stays its natural size; brand clips it */
     display: block;
 }
 
@@ -1286,7 +1288,8 @@ body.mission-open .missionChevron {
         width: auto;
     }
 
-    #logo { height: 36px; }
+    /* Slightly smaller logo on mobile — 34px height → 204px width (360:60 ratio) */
+    #logo { height: 34px; }
 
     /* Reset flex order; explicitly pin all three items into the 2×2 grid */
     #searchContainer { order: 0; }
@@ -1395,4 +1398,30 @@ body.mission-open .missionChevron {
     }
 
     .amountGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ========== Very small phones (≤ 390px) ========== */
+/* At this width the 1fr brand column is ~245px and the logo is 204px — fine.
+   But we tighten the Give button so the brand gets more room. */
+
+@media (max-width: 390px) {
+    /* Compact Give button: icon only (hide "Give" label) */
+    .giveButton span { display: none; }
+    .giveButton {
+        padding: 0;
+        width: 44px;
+        min-height: 44px;
+    }
+
+    /* Logo at 30px → 180px wide; leaves brand column ~201px so it fits cleanly */
+    #logo { height: 30px; }
+}
+
+/* ========== Icon-only logo (≤ 320px) ========== */
+/* Extreme small screens — clip the brand to just the pin icon */
+
+@media (max-width: 320px) {
+    #brand {
+        max-width: 30px; /* logo at 30px height = 180px wide; clipped to show ~30px = pin icon */
+    }
 }
