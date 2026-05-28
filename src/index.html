@@ -207,6 +207,19 @@
         </section>
     </div>
 
+    <!-- Water site bottom sheet (mobile) -->
+    <div id="waterSheet" role="dialog" aria-modal="true" aria-label="Water source details" aria-hidden="true" hidden>
+        <div class="sheetDragBar">
+            <span class="sheetHandle" aria-hidden="true"></span>
+            <button id="waterSheetClose" class="sheetCloseBtn" type="button" aria-label="Close water source details">
+                <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                    <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <div id="waterSheetContent" class="sheetContent"></div>
+    </div>
+
     <div id="map"></div>
 
     <script src="vendor/leaflet.js"></script>

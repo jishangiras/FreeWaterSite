@@ -36,6 +36,9 @@ const missionToggle = document.getElementById('missionToggle');
 const missionModal = document.getElementById('missionModal');
 const missionClose = document.getElementById('missionClose');
 const missionDonateBtn = document.getElementById('missionDonateBtn');
+const waterSheet = document.getElementById('waterSheet');
+const waterSheetContent = document.getElementById('waterSheetContent');
+const waterSheetClose = document.getElementById('waterSheetClose');
 const customDonationAmount = document.getElementById('customDonationAmount');
 const donateButton = document.getElementById('donateButton');
 const markerLayer = L.layerGroup().addTo(map);
@@ -55,6 +58,8 @@ let locationWatchTimeout = null;
 let bestLocationAccuracy = Infinity;
 let nearestWaterSite = null;
 let waterSites = [];
+
+const isMobile = () => window.matchMedia('(max-width: 720px)').matches;
 
 const waterMarkerHtml = '<img src="images/water-marker.svg" alt="" aria-hidden="true">';
 
@@ -117,6 +122,7 @@ function setResultsMode(isActive) {
     document.body.classList.toggle('has-map-results', isActive);
     document.body.classList.toggle('is-search-home', !isActive);
     if (isActive) closeMissionModal();
+    closeWaterSheet();
 }
 
 // --- Mission modal ---
@@ -139,6 +145,27 @@ function closeMissionModal() {
     // Wait for transition before hiding
     missionModal.addEventListener('transitionend', () => {
         if (!missionModal.classList.contains('is-open')) missionModal.hidden = true;
+    }, { once: true });
+}
+
+// --- Water bottom sheet ---
+
+function openWaterSheet(html) {
+    waterSheetContent.innerHTML = html;
+    waterSheet.hidden = false;
+    waterSheet.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => waterSheet.classList.add('is-open'));
+}
+
+function closeWaterSheet() {
+    if (waterSheet.hidden) return;
+    waterSheet.classList.remove('is-open');
+    waterSheet.setAttribute('aria-hidden', 'true');
+    waterSheet.addEventListener('transitionend', () => {
+        if (!waterSheet.classList.contains('is-open')) {
+            waterSheet.hidden = true;
+            waterSheetContent.innerHTML = '';
+        }
     }, { once: true });
 }
 
@@ -264,10 +291,10 @@ function buildPopupContent(element, tags, position) {
         ['Type', getWaterType(tags), 'type'],
         ['Access', getAccessText(tags), 'access'],
         ['Fee', getFeeText(tags), 'coin'],
-        ['Bottle', getBottleText(tags), 'bottle'],
-        ['Indoor', tags.indoor ? formatTagValue(tags.indoor) : 'Not listed', 'indoor'],
-        ['Hours', tags.opening_hours || 'Not listed', 'clock'],
-        ['Operator', tags.operator || 'Not listed', 'operator']
+        ...(tags.bottle ? [['Bottle', getBottleText(tags), 'bottle']] : []),
+        ...(tags.indoor ? [['Indoor', formatTagValue(tags.indoor), 'indoor']] : []),
+        ...(tags.opening_hours ? [['Hours', tags.opening_hours, 'clock']] : []),
+        ...(tags.operator ? [['Operator', tags.operator, 'operator']] : []),
     ];
 
     const detailRows = usefulDetails
@@ -295,7 +322,7 @@ function buildPopupContent(element, tags, position) {
             <div class="popupHighlights" aria-label="Water source highlights">
                 <span>${popupIcon('coin')}${escapeHtml(getFeeText(tags))}</span>
                 <span>${popupIcon('access')}${escapeHtml(getAccessText(tags))}</span>
-                <span>${popupIcon('bottle')}${escapeHtml(getBottleText(tags))}</span>
+                ${tags.bottle ? `<span>${popupIcon('bottle')}${escapeHtml(getBottleText(tags))}</span>` : ''}
             </div>
             <div class="popupDetails">
                 ${detailRows}
@@ -326,16 +353,28 @@ function addMarker(element) {
     if (!position) return;
 
     const marker = L.marker([position.lat, position.lon], { icon: waterIcon })
-        .addTo(markerLayer)
-        .bindPopup(buildPopupContent(element, tags, position), { maxWidth: 320 });
+        .addTo(markerLayer);
 
-    waterSites.push({
-        element,
-        marker,
-        name: formatSiteName(tags),
-        position
-    });
+    function openSite() {
+        const html = buildPopupContent(element, tags, position);
+        if (isMobile()) {
+            openWaterSheet(html);
+        } else {
+            if (!marker.getPopup()) {
+                marker.bindPopup(html, {
+                    maxWidth: 360,
+                    keepInView: true,
+                    autoPanPaddingTopLeft: L.point(16, 80),
+                    autoPanPaddingBottomRight: L.point(16, 20)
+                });
+            }
+            marker.openPopup();
+        }
+    }
 
+    marker.on('click', openSite);
+
+    waterSites.push({ element, marker, name: formatSiteName(tags), position, openSite });
     marker.on('add', () => updateClosestWaterSource());
 }
 
@@ -367,6 +406,7 @@ function fetchDrinkingWaterSites(lat, lon) {
     searchAreaButton.style.display = 'none';
     markerLayer.clearLayers();
     waterSites = [];
+    closeWaterSheet();
 
     fetch('https://overpass-api.de/api/interpreter', {
         method: 'POST',
@@ -470,7 +510,7 @@ closestWaterButton.addEventListener('click', () => {
     if (!nearestWaterSite) return;
     const { lat, lon } = nearestWaterSite.position;
     map.flyTo([lat, lon], Math.max(map.getZoom(), 17), { duration: 0.8 });
-    nearestWaterSite.marker.openPopup();
+    nearestWaterSite.openSite();
 });
 
 map.on('zoomend moveend', () => {
@@ -478,6 +518,8 @@ map.on('zoomend moveend', () => {
     searchAreaButton.style.display = 'block';
     searchAreaButton.textContent = 'Search this area';
 });
+
+map.on('click', () => closeWaterSheet());
 
 searchAreaButton.addEventListener('click', () => {
     const center = map.getCenter();
@@ -802,6 +844,8 @@ function closeDonationDialog() {
 donationOpenButton.addEventListener('click', openDonationDialog);
 donationCloseButton.addEventListener('click', closeDonationDialog);
 
+waterSheetClose.addEventListener('click', closeWaterSheet);
+
 missionToggle.addEventListener('click', openMissionModal);
 missionClose.addEventListener('click', closeMissionModal);
 missionModal.addEventListener('click', e => { if (e.target === missionModal) closeMissionModal(); });
@@ -813,6 +857,7 @@ donationOverlay.addEventListener('click', event => {
 
 document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
+    if (!waterSheet.hidden) { closeWaterSheet(); return; }
     if (!missionModal.hidden) { closeMissionModal(); return; }
     if (!donationOverlay.hidden) closeDonationDialog();
 });
