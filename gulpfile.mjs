@@ -21,8 +21,22 @@ const paths = {
         dest: 'dist/'
     },
     images: {
-        src: 'src/images/**/*.{jpg,jpeg,png,svg,gif}',
+        src: 'src/images/**/*.{jpg,jpeg,png,svg,gif,ico,webp}',
         dest: 'dist/images/'
+    },
+    cname: {
+        src: 'src/CNAME',
+        dest: 'dist/'
+    },
+    vendor: {
+        src: [
+            'node_modules/leaflet/dist/leaflet.js',
+            'node_modules/leaflet/dist/leaflet.css',
+            'node_modules/leaflet/dist/images/**'
+        ],
+        destJs: 'dist/vendor/',
+        destCss: 'dist/vendor/',
+        destImages: 'dist/vendor/images/'
     }
 };
 
@@ -48,11 +62,13 @@ function styles() {
 }
 
 // Minify HTML files and replace references to minified CSS and JS
+const buildVersion = Date.now();
+
 function html() {
     return gulp.src(paths.html.src)
         .pipe(htmlreplace({
-            'css': 'css/main.min.css',
-            'js': 'js/main.min.js'
+            'css': `css/main.min.css?v=${buildVersion}`,
+            'js': `js/main.min.js?v=${buildVersion}`
         }))
         .pipe(htmlmin({ collapseWhitespace: true }))
         .pipe(gulp.dest(paths.html.dest));
@@ -64,9 +80,22 @@ function images() {
         .pipe(gulp.dest(paths.images.dest));
 }
 
+// Copy CNAME for GitHub Pages custom domain
+function cname() {
+    return gulp.src(paths.cname.src)
+        .pipe(gulp.dest(paths.cname.dest));
+}
+
+// Vendor Leaflet locally (avoids CDN dependency, enables offline/preview use)
+function vendor() {
+    gulp.src('node_modules/leaflet/dist/leaflet.js').pipe(gulp.dest(paths.vendor.destJs));
+    gulp.src('node_modules/leaflet/dist/leaflet.css').pipe(gulp.dest(paths.vendor.destCss));
+    return gulp.src('node_modules/leaflet/dist/images/**').pipe(gulp.dest(paths.vendor.destImages));
+}
+
 // Define complex tasks
-const build = gulp.series(clean, gulp.parallel(scripts, styles, html, images));
+const build = gulp.series(clean, gulp.parallel(scripts, styles, html, images, cname, vendor));
 
 // Export tasks
-export { clean, scripts, styles, html, images, build };
+export { clean, scripts, styles, html, images, cname, vendor, build };
 export default build;

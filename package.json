@@ -1,10 +1,11 @@
 {
   "name": "freewatersite",
   "version": "1.0.0",
-  "description": "Free Water Site is an interactive web application designed to help users find free drinking water locations using OpenStreetMap and Google Street View.",
-  "main": "index.js",
+  "description": "FreeWaterSite is a static web app for finding free public drinking water locations using OpenStreetMap data.",
+  "private": true,
+  "homepage": "https://freewatersite.org/",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "gulp clean",
     "build": "gulp"
   },
   "keywords": [
@@ -13,8 +14,15 @@
     "free",
     "drinking water"
   ],
-  "author": "",
+  "author": "Jishan Giras",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jishangiras/freewatersite.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jishangiras/freewatersite/issues"
+  },
   "devDependencies": {
     "del": "^7.1.0",
     "gulp": "^4.0.2",
@@ -23,6 +31,7 @@
     "gulp-html-replace": "^1.6.2",
     "gulp-htmlmin": "^5.0.1",
     "gulp-terser": "^2.1.0",
-    "gulp-uglify": "^3.0.2"
+    "gulp-uglify": "^3.0.2",
+    "leaflet": "^1.9.4"
   }
 }

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">FreeWaterSite social preview</title>
+  <desc id="desc">FreeWaterSite helps people find free public drinking water nearby.</desc>
+  <rect width="1200" height="630" fill="#EAF6FF"/>
+  <path fill="#BFE3FF" d="M0 458c150-77 258-50 380-8 136 46 265 72 425-11 151-78 272-84 395-23v214H0V458Z"/>
+  <path fill="#D7F2E1" d="M0 486c112-54 232-48 358 17 134 69 268 73 404 7 170-82 300-91 438-22v142H0V486Z"/>
+  <g transform="translate(84 100)">
+    <use href="#pin"/>
+  </g>
+  <defs>
+    <g id="pin">
+      <path fill="#2685E8" d="M96 0C43 0 0 42.5 0 94.8 0 162.2 85.4 225 89 227.7a10 10 0 0 0 12 0c3.7-2.7 89-65.5 89-132.9C190 42.5 147 0 96 0Z"/>
+      <path fill="#fff" d="M96 42c-28.5 0-51.5 23-51.5 51.5S67.5 145 96 145s51.5-23 51.5-51.5S124.5 42 96 42Zm0 82.8a31.2 31.2 0 1 1 0-62.4 31.2 31.2 0 0 1 0 62.4Z"/>
+    </g>
+  </defs>
+  <text x="320" y="215" fill="#14243A" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="82" font-weight="800" letter-spacing="0">FreeWaterSite</text>
+  <text x="326" y="300" fill="#35516D" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="34" font-weight="700" letter-spacing="0">Find free public drinking water nearby.</text>
+  <text x="326" y="366" fill="#53677E" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="25" font-weight="700" letter-spacing="0">Powered by OpenStreetMap public data</text>
+</svg>
