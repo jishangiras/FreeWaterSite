@@ -1,6 +1,4 @@
-// Stripe Payment Links — create these in the 1Labs Stripe account (acct_18hXnKE3FNscJyVT)
-// Dashboard: Stripe > Payment Links > Create link
-// Product: "FreeWaterSite Donation", custom_unit_amount, min $1, preset $5
+// Stripe Payment Links — paste your live Payment Link URLs here
 const STRIPE_LINKS = {
     monthly: 'https://donate.stripe.com/REPLACE_WITH_MONTHLY_LINK',
     once: 'https://donate.stripe.com/REPLACE_WITH_ONETIME_LINK'
