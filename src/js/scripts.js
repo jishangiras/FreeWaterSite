@@ -149,20 +149,30 @@ function closeMissionModal() {
 }
 
 // --- Water bottom sheet ---
+// sheetCloseToken: incremented by openWaterSheet to cancel any in-flight close
+// animation (avoids race where Leaflet fires map click before marker click).
+let sheetCloseToken = 0;
 
 function openWaterSheet(html) {
+    sheetCloseToken++;                          // cancel any pending close
     waterSheetContent.innerHTML = html;
     waterSheet.hidden = false;
     waterSheet.setAttribute('aria-hidden', 'false');
-    requestAnimationFrame(() => waterSheet.classList.add('is-open'));
+    // Force a reflow so the transition fires even if we're mid-close
+    waterSheet.classList.remove('is-open');
+    // eslint-disable-next-line no-unused-expressions
+    waterSheet.offsetHeight;
+    waterSheet.classList.add('is-open');
 }
 
 function closeWaterSheet() {
     if (waterSheet.hidden) return;
+    const token = ++sheetCloseToken;
     waterSheet.classList.remove('is-open');
     waterSheet.setAttribute('aria-hidden', 'true');
     waterSheet.addEventListener('transitionend', () => {
-        if (!waterSheet.classList.contains('is-open')) {
+        // Only hide if no openWaterSheet() was called since we started closing
+        if (token === sheetCloseToken && !waterSheet.classList.contains('is-open')) {
             waterSheet.hidden = true;
             waterSheetContent.innerHTML = '';
         }
@@ -189,10 +199,49 @@ function getPositionLatLng(position) {
 }
 
 function formatSiteName(tags) {
+    // Use the OSM name if mapped
     if (tags.name) return tags.name;
-    if (tags.amenity === 'fountain') return 'Public Fountain';
-    if (tags.man_made === 'water_tap') return 'Water Tap';
-    return 'Drinking Water Site';
+
+    const type = tags.amenity === 'fountain' ? 'Fountain'
+               : tags.man_made === 'water_tap' ? 'Water Tap'
+               : 'Drinking Water';
+
+    // Street address → "Fountain at 12 Oak St"
+    if (tags['addr:street']) {
+        const num = tags['addr:housenumber'];
+        return `${type} ${num ? `at ${num} ${tags['addr:street']}` : `on ${tags['addr:street']}`}`;
+    }
+    // Operator branding → "Water Tap · Chicago Parks"
+    if (tags.operator) return `${type} · ${tags.operator}`;
+    // Structural location tag → "Fountain (entrance)"
+    if (tags.location) return `${type} (${formatTagValue(tags.location)})`;
+    // Neighbourhood or city → "Fountain in Wicker Park"
+    const area = tags['addr:neighbourhood'] || tags['addr:suburb']
+               || tags['addr:city']         || tags['addr:town']
+               || tags['addr:village'];
+    if (area) return `${type} in ${area}`;
+    // Indoor hint
+    if (tags.indoor === 'yes') return `Indoor ${type}`;
+
+    return `Public ${type}`;
+}
+
+function getPopupSubtitle(tags) {
+    // Return the most useful WHERE label for the card subtitle
+    if (tags['addr:street']) {
+        const num = tags['addr:housenumber'];
+        const line1 = num ? `${num} ${tags['addr:street']}` : tags['addr:street'];
+        const city = tags['addr:city'] || tags['addr:town'] || tags['addr:village'];
+        return city ? `${line1}, ${city}` : line1;
+    }
+    const area = tags['addr:neighbourhood'] || tags['addr:suburb']
+               || tags['addr:city']         || tags['addr:town']
+               || tags['addr:village'];
+    if (area) return area;
+    if (tags.operator) return `Operated by ${tags.operator}`;
+    if (tags.location) return formatTagValue(tags.location);
+    if (tags.indoor === 'yes') return 'Indoor location';
+    return getWaterType(tags);
 }
 
 function formatTagValue(value) {
@@ -312,7 +361,7 @@ function buildPopupContent(element, tags, position) {
                 <img src="images/water-pin-icon.svg" alt="" aria-hidden="true">
                 <div>
                     <strong>${escapeHtml(formatSiteName(tags))}</strong>
-                    <span>${escapeHtml(getWaterType(tags))} nearby</span>
+                    <span>${escapeHtml(getPopupSubtitle(tags))}</span>
                 </div>
             </header>
             <div class="popupSummary" aria-label="Water source summary">
@@ -363,16 +412,19 @@ function addMarker(element) {
             if (!marker.getPopup()) {
                 marker.bindPopup(html, {
                     maxWidth: 360,
-                    keepInView: true,
-                    autoPanPaddingTopLeft: L.point(16, 80),
-                    autoPanPaddingBottomRight: L.point(16, 20)
+                    // autoPan: false prevents Leaflet from panning the map
+                    // every time the popup opens (the user just clicked the
+                    // marker so it's already in view — no scroll needed).
+                    autoPan: false
                 });
             }
             marker.openPopup();
         }
     }
 
-    marker.on('click', openSite);
+    // Stop the click from propagating to the map's click handler,
+    // which would trigger closeWaterSheet() immediately after openSite().
+    marker.on('click', (e) => { L.DomEvent.stopPropagation(e); openSite(); });
 
     waterSites.push({ element, marker, name: formatSiteName(tags), position, openSite });
     marker.on('add', () => updateClosestWaterSource());
