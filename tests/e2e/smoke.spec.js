@@ -132,21 +132,23 @@ test.describe('Mission modal (desktop only)', () => {
   test('closes when × is clicked', async ({ page }) => {
     await page.goto('/');
     await page.click('#missionToggle');
-    // Wait for the rAF + CSS transition to complete before closing
-    await expect(page.locator('#missionModal')).toBeVisible({ timeout: 2_000 });
+    // Wait for is-open class — same rAF race as the ESC test.
+    await expect(page.locator('#missionModal.is-open')).toBeAttached({ timeout: 2_000 });
     await page.click('#missionClose');
-    await expect(page.locator('#missionModal')).toBeHidden({ timeout: 2_000 });
+    await expect(page.locator('#missionModal')).toBeHidden({ timeout: 3_000 });
   });
 
   test('closes when ESC is pressed', async ({ page }) => {
     await page.goto('/');
     await page.click('#missionToggle');
-    // Must wait for the modal to be fully open — closeMissionModal relies on
-    // transitionend which only fires after an actual CSS transition starts.
-    // If ESC is pressed before is-open is set via rAF, the transition never
-    // begins and transitionend never fires → modal stays visible.
-    await expect(page.locator('#missionModal')).toBeVisible({ timeout: 2_000 });
+    // Wait for is-open class specifically — toBeVisible() resolves when hidden=false
+    // (set synchronously), but is-open is added one rAF later. Pressing ESC before
+    // is-open is present means no CSS transition starts → transitionend never fires
+    // → modal never gets hidden=true.
+    await expect(page.locator('#missionModal.is-open')).toBeAttached({ timeout: 2_000 });
     await page.keyboard.press('Escape');
-    await expect(page.locator('#missionModal')).toBeHidden({ timeout: 2_000 });
+    // The opacity transition is 200ms; hidden=true is set in transitionend.
+    // Give 3s so slow CI runners have enough headroom.
+    await expect(page.locator('#missionModal')).toBeHidden({ timeout: 3_000 });
   });
 });
