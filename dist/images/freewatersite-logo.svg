@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 60" role="img" aria-labelledby="fws-title">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 60" width="360" height="60" role="img" aria-labelledby="fws-title">
   <title id="fws-title">FreeWaterSite</title>
   <defs>
     <linearGradient id="pinGradient" x1="6" y1="2" x2="54" y2="58" gradientUnits="userSpaceOnUse">

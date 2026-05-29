@@ -6,7 +6,9 @@
   "homepage": "https://freewatersite.org/",
   "scripts": {
     "clean": "gulp clean",
-    "build": "gulp"
+    "build": "gulp",
+    "test": "playwright test",
+    "test:report": "playwright show-report"
   },
   "keywords": [
     "water",
@@ -24,6 +26,7 @@
     "url": "https://github.com/jishangiras/freewatersite/issues"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "del": "^7.1.0",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
