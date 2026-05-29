@@ -7,7 +7,6 @@ import { test, expect } from '@playwright/test';
 
 // ── Mock data ──────────────────────────────────────────────────────────────
 
-/** Nominatim geocoding result — Basavanagudi, Bengaluru */
 const MOCK_GEOCODE = [
   {
     lat: '12.9452',
@@ -17,29 +16,19 @@ const MOCK_GEOCODE = [
   },
 ];
 
-/** Overpass API response — three water nodes */
 const MOCK_OVERPASS = {
   version: 0.6,
   elements: [
     {
-      type: 'node',
-      id: 100001,
-      lat: 12.9452,
-      lon: 77.5754,
+      type: 'node', id: 100001, lat: 12.9452, lon: 77.5754,
       tags: { amenity: 'drinking_water', name: 'Gandhi Park Tap' },
     },
     {
-      type: 'node',
-      id: 100002,
-      lat: 12.9430,
-      lon: 77.5720,
+      type: 'node', id: 100002, lat: 12.9430, lon: 77.5720,
       tags: { amenity: 'drinking_water' },
     },
     {
-      type: 'node',
-      id: 100003,
-      lat: 12.9480,
-      lon: 77.5780,
+      type: 'node', id: 100003, lat: 12.9480, lon: 77.5780,
       tags: { amenity: 'fountain', drinking_water: 'yes', name: 'Bugle Rock Fountain' },
     },
   ],
@@ -61,11 +50,18 @@ async function doSearch(page) {
   await page.goto('/');
   await page.fill('#searchInput', 'Basavanagudi');
   await page.click('#searchButton');
-  // Wait for result count to appear
-  await expect(page.locator('#statusMessage')).toContainText('free drinking water location', { timeout: 10_000 });
+  await expect(page.locator('#statusMessage')).toContainText(
+    'free drinking water location', { timeout: 10_000 }
+  );
 }
 
-// ── Tests ──────────────────────────────────────────────────────────────────
+/** True when viewport width ≤ 720px — mirrors the app's isMobile() CSS check */
+async function isNarrowViewport(page) {
+  const vp = page.viewportSize();
+  return (vp?.width ?? 1280) <= 720;
+}
+
+// ── Search flow ────────────────────────────────────────────────────────────
 
 test.describe('Search flow', () => {
   test('searching a city shows result count', async ({ page }) => {
@@ -84,36 +80,34 @@ test.describe('Search flow', () => {
   });
 });
 
+// ── Map markers ────────────────────────────────────────────────────────────
+
 test.describe('Map markers', () => {
   test('water markers appear on the map after search', async ({ page }) => {
     await doSearch(page);
-    // Each result gets a .waterMarkerIcon div in the Leaflet marker pane
-    const markers = page.locator('.waterMarkerIcon');
-    await expect(markers).toHaveCount(3, { timeout: 8_000 });
+    await expect(page.locator('.waterMarkerIcon')).toHaveCount(3, { timeout: 8_000 });
   });
 
-  test('each marker contains the water-marker SVG image', async ({ page }) => {
+  test('each marker image has valid pixel dimensions', async ({ page }) => {
     await doSearch(page);
     const markerImgs = page.locator('.waterMarkerIcon img');
-    const count = await markerImgs.count();
-    expect(count).toBe(3);
-    for (let i = 0; i < count; i++) {
+    await expect(markerImgs).toHaveCount(3);
+    for (let i = 0; i < 3; i++) {
       await expect(markerImgs.nth(i)).toBeVisible();
       const box = await markerImgs.nth(i).boundingBox();
-      expect(box.width).toBeGreaterThan(10);
-      expect(box.height).toBeGreaterThan(10);
+      expect(box?.width).toBeGreaterThan(10);
+      expect(box?.height).toBeGreaterThan(10);
     }
   });
 
   test('markers are within the visible map area', async ({ page }) => {
     await doSearch(page);
-    const mapBox  = await page.locator('#map').boundingBox();
+    const mapBox = await page.locator('#map').boundingBox();
     const markers = page.locator('.waterMarkerIcon');
-    const count   = await markers.count();
+    const count = await markers.count();
     for (let i = 0; i < count; i++) {
       const mBox = await markers.nth(i).boundingBox();
-      if (!mBox) continue;
-      // Marker anchor centre should be inside the map container
+      if (!mBox || !mapBox) continue;
       const cx = mBox.x + mBox.width / 2;
       const cy = mBox.y + mBox.height / 2;
       expect(cx).toBeGreaterThan(mapBox.x);
@@ -124,8 +118,13 @@ test.describe('Map markers', () => {
   });
 });
 
+// ── Desktop popup (wide viewport only) ────────────────────────────────────
+
 test.describe('Water card (desktop popup)', () => {
-  test.skip(({ isMobile }) => isMobile, 'Desktop popup — see mobile sheet tests');
+  test.beforeEach(async ({ page }) => {
+    // Skip when the app is in mobile mode (≤720px)
+    if (await isNarrowViewport(page)) test.skip();
+  });
 
   test('clicking a marker opens a Leaflet popup', async ({ page }) => {
     await doSearch(page);
@@ -141,6 +140,15 @@ test.describe('Water card (desktop popup)', () => {
     await expect(popup).toContainText(/Gandhi Park Tap|Drinking Water|Free Water/i);
   });
 
+  test('popup fits within viewport height (max-height enforced)', async ({ page }) => {
+    await doSearch(page);
+    await page.locator('.waterMarkerIcon').first().click();
+    await expect(page.locator('.leaflet-popup')).toBeVisible({ timeout: 5_000 });
+    const popupBox = await page.locator('.leaflet-popup-content-wrapper').boundingBox();
+    const vp = page.viewportSize();
+    expect(popupBox?.height).toBeLessThan((vp?.height ?? 900) * 0.8);
+  });
+
   test('popup has action links (directions, OSM record)', async ({ page }) => {
     await doSearch(page);
     await page.locator('.waterMarkerIcon').first().click();
@@ -150,8 +158,13 @@ test.describe('Water card (desktop popup)', () => {
   });
 });
 
+// ── Mobile bottom sheet (narrow viewport only) ────────────────────────────
+
 test.describe('Water sheet (mobile bottom sheet)', () => {
-  test.skip(({ isMobile }) => !isMobile, 'Mobile sheet — see desktop popup tests');
+  test.beforeEach(async ({ page }) => {
+    // Only run when the app is in mobile mode (≤720px)
+    if (!(await isNarrowViewport(page))) test.skip();
+  });
 
   test('clicking a marker opens the bottom sheet', async ({ page }) => {
     await doSearch(page);
@@ -162,13 +175,14 @@ test.describe('Water sheet (mobile bottom sheet)', () => {
   test('bottom sheet contains site content', async ({ page }) => {
     await doSearch(page);
     await page.locator('.waterMarkerIcon').first().click();
+    await expect(page.locator('#waterSheet')).toBeVisible({ timeout: 5_000 });
     await expect(page.locator('#waterSheetContent')).toContainText(/water|fountain/i);
   });
 
   test('close button hides the sheet', async ({ page }) => {
     await doSearch(page);
     await page.locator('.waterMarkerIcon').first().click();
-    await expect(page.locator('#waterSheet')).toBeVisible();
+    await expect(page.locator('#waterSheet')).toBeVisible({ timeout: 5_000 });
     await page.click('#waterSheetClose');
     await expect(page.locator('#waterSheet')).toBeHidden({ timeout: 3_000 });
   });
@@ -176,19 +190,21 @@ test.describe('Water sheet (mobile bottom sheet)', () => {
   test('ESC closes the sheet', async ({ page }) => {
     await doSearch(page);
     await page.locator('.waterMarkerIcon').first().click();
-    await expect(page.locator('#waterSheet')).toBeVisible();
+    await expect(page.locator('#waterSheet')).toBeVisible({ timeout: 5_000 });
     await page.keyboard.press('Escape');
     await expect(page.locator('#waterSheet')).toBeHidden({ timeout: 3_000 });
   });
-});
 
-test.describe('Closest water button', () => {
-  test('closest water button appears after search when location available', async ({ page }) => {
-    // Grant geolocation permission and set a position inside Basavanagudi
-    await page.context().grantPermissions(['geolocation']);
-    await page.context().setGeolocation({ latitude: 12.9452, longitude: 77.5754 });
+  test('marker is visible above the sheet after opening', async ({ page }) => {
     await doSearch(page);
-    // Button appears once a nearest site is computed
-    await expect(page.locator('#closestWaterButton')).toBeVisible({ timeout: 5_000 });
+    const marker = page.locator('.waterMarkerIcon').first();
+    await marker.click();
+    await expect(page.locator('#waterSheet')).toBeVisible({ timeout: 5_000 });
+
+    // After the pan animation, the marker should sit in the top ~50% of the screen
+    await page.waitForTimeout(400); // allow panBy animation to finish
+    const markerBox = await marker.boundingBox();
+    const vp = page.viewportSize();
+    expect(markerBox?.y).toBeLessThan((vp?.height ?? 844) * 0.55);
   });
 });

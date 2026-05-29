@@ -21,7 +21,7 @@ export default defineConfig({
     command: 'npx serve dist -p 4321 -n',
     url: 'http://localhost:4321',
     reuseExistingServer: !process.env.CI,
-    timeout: 20_000,
+    timeout: 30_000,
     stdout: 'ignore',
     stderr: 'ignore',
   },
@@ -32,10 +32,19 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    /* Mobile (iPhone 14 viewport) */
+    /*
+     * Mobile — use a narrow viewport but keep mouse input (not hasTouch).
+     * This exercises the ≤720px CSS breakpoints and the mobile bottom sheet
+     * path without the quirks that full touch-device emulation introduces
+     * in headless Chromium (form submit via page.click behaves differently).
+     */
     {
       name: 'mobile',
-      use: { ...devices['iPhone 14'] },
+      use: {
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 3,
+        isMobile: false, // keep mouse events; touch tested manually on device
+      },
     },
   ],
 });

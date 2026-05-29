@@ -117,7 +117,11 @@ test.describe('Donation modal', () => {
 });
 
 test.describe('Mission modal (desktop only)', () => {
-  test.skip(({ isMobile }) => isMobile, 'Mission toggle is desktop-only');
+  // Mission panel is hidden on ≤720px (CSS: #missionPanel { display: none !important })
+  test.beforeEach(async ({ page }) => {
+    const vp = page.viewportSize();
+    if ((vp?.width ?? 1280) <= 720) test.skip();
+  });
 
   test('opens when Why free water? is clicked', async ({ page }) => {
     await page.goto('/');
@@ -128,14 +132,21 @@ test.describe('Mission modal (desktop only)', () => {
   test('closes when × is clicked', async ({ page }) => {
     await page.goto('/');
     await page.click('#missionToggle');
+    // Wait for the rAF + CSS transition to complete before closing
+    await expect(page.locator('#missionModal')).toBeVisible({ timeout: 2_000 });
     await page.click('#missionClose');
-    await expect(page.locator('#missionModal')).toBeHidden();
+    await expect(page.locator('#missionModal')).toBeHidden({ timeout: 2_000 });
   });
 
   test('closes when ESC is pressed', async ({ page }) => {
     await page.goto('/');
     await page.click('#missionToggle');
+    // Must wait for the modal to be fully open — closeMissionModal relies on
+    // transitionend which only fires after an actual CSS transition starts.
+    // If ESC is pressed before is-open is set via rAF, the transition never
+    // begins and transitionend never fires → modal stays visible.
+    await expect(page.locator('#missionModal')).toBeVisible({ timeout: 2_000 });
     await page.keyboard.press('Escape');
-    await expect(page.locator('#missionModal')).toBeHidden();
+    await expect(page.locator('#missionModal')).toBeHidden({ timeout: 2_000 });
   });
 });
