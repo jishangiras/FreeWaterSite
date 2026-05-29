@@ -966,190 +966,121 @@ body.mission-open .missionChevron {
     border-radius: 14px;
     color: #172235;
     box-shadow: 0 18px 48px rgba(16, 37, 62, 0.24);
+    overflow: hidden;
 }
 
 .leaflet-popup-content-wrapper .leaflet-popup-content {
     margin: 0;
-    min-width: 280px;
-    /* Cap popup height so it fits on screen; card scrolls internally */
-    max-height: min(68vh, 480px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    font-size: 0.92rem;
-    line-height: 1.45;
+    width: min(310px, calc(100dvw - 44px)) !important;
+    font-size: 0.9rem;
+    line-height: 1.4;
 }
 
+/* -------- Water card (shared: desktop popup + mobile sheet) -------- */
+
 .waterPopup {
-    width: min(360px, calc(100dvw - 44px));
-    border-radius: 14px;
     background: #fff;
 }
 
+/* Header: drop icon + name + subtitle */
 .popupHeader {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 18px 18px 10px;
+    gap: 10px;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid #edf2f5;
 }
 
-.popupHeader img {
-    width: 34px;
-    height: 38px;
-    flex: 0 0 auto;
+.popupDropIcon {
+    flex: 0 0 22px;
+    color: #2685e8;
 }
 
-.popupHeader div {
-    min-width: 0;
-}
+.popupHeader div { min-width: 0; }
 
 .popupHeader strong {
     display: block;
     color: #172235;
-    font-size: 1.02rem;
-    line-height: 1.2;
+    font-size: 0.94rem;
+    font-weight: 800;
+    line-height: 1.25;
 }
 
 .popupHeader span {
     display: block;
-    margin-top: 3px;
+    margin-top: 2px;
     color: #637387;
-    font-size: 0.78rem;
+    font-size: 0.73rem;
     font-weight: 700;
 }
 
-.popupHighlights {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 10px 18px 12px;
+/* Details: compact 2-col label → value list */
+.popupDetails {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    row-gap: 6px;
+    column-gap: 16px;
+    padding: 11px 16px 13px;
+    margin: 0;
     border-bottom: 1px solid #edf2f5;
 }
 
-.popupHighlights span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 26px;
-    padding: 0 10px;
-    color: #0b5a9c;
-    background: #eef7ff;
-    border: 1px solid #d7ebfb;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 800;
-}
-
-.popupHighlights svg,
-.popupDetail svg,
-.popupNote svg,
-.popupCoordinates svg,
-.popupActions svg {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 16px;
-}
-
-.popupDetails {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 12px 18px 14px;
-}
-
-.popupDetail {
-    min-width: 0;
-    padding: 10px 11px;
-    background: #f7fafc;
-    border: 1px solid #e6eef4;
-    border-radius: 9px;
-}
-
-.popupDetail span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: #6a7a8e;
-    font-size: 0.7rem;
+.popupDetails dt {
+    color: #8a9aad;
+    font-size: 0.68rem;
     font-weight: 800;
     text-transform: uppercase;
+    letter-spacing: 0.04em;
+    align-self: center;
+    white-space: nowrap;
 }
 
-.popupDetail strong {
-    display: block;
-    margin-top: 5px;
-    overflow-wrap: anywhere;
-    color: #172235;
-    font-size: 0.82rem;
-    font-weight: 750;
-    line-height: 1.3;
-}
-
-.popupNote {
-    display: flex;
-    align-items: flex-start;
-    gap: 7px;
+.popupDetails dd {
     margin: 0;
-    padding: 10px 18px 14px;
-    color: #8a9aad;
-    font-size: 0.7rem;
+    color: #172235;
+    font-size: 0.83rem;
     font-weight: 600;
-    line-height: 1.3;
-    border-top: 1px solid #edf2f5;
+    align-self: center;
+    overflow-wrap: anywhere;
 }
 
-.popupNote svg {
-    flex-shrink: 0;
-    margin-top: 1px;
-}
-
-.popupCoordinates {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    margin: 0 18px 14px;
-    color: #6a7a8e;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-}
-
+/* Action buttons: View map (wide) | Directions | OSM */
 .popupActions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 14px 18px 18px;
+    display: flex;
+    gap: 7px;
+    padding: 10px 16px 14px;
     background: #f8fbfc;
-    border-top: 1px solid #edf2f5;
 }
 
 .popupActions a {
+    flex: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-height: 40px;
+    gap: 5px;
+    min-height: 35px;
     color: #076fbf;
     background: white;
     border: 1px solid #dce7ee;
     border-radius: 8px;
-    font-size: 0.88rem;
-    font-weight: 850;
+    font-size: 0.77rem;
+    font-weight: 800;
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .popupActions a:first-child {
-    grid-column: 1 / -1;
+    flex: 1.7;
     color: white;
     background: #2685e8;
     border-color: #2685e8;
 }
 
+.popupActions svg,
 .popupActions img {
-    width: 17px;
-    height: 17px;
-    flex: 0 0 17px;
+    width: 13px;
+    height: 13px;
+    flex: 0 0 13px;
     display: block;
 }
 
@@ -1229,10 +1160,9 @@ body.mission-open .missionChevron {
     padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
-/* Inside sheet the card fills full width with no top rounding */
+/* Inside sheet the card fills full width */
 #waterSheet .waterPopup {
     width: 100%;
-    border-radius: 0;
 }
 
 /* ========== Spinner ========== */

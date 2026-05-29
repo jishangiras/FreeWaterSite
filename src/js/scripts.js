@@ -338,55 +338,43 @@ function popupIcon(name) {
 function buildPopupContent(element, tags, position) {
     const osmElementUrl = getOpenStreetMapElementUrl(element);
 
-    // Compact details list — only rows that have real data
+    // Only rows that have real data — shown as a compact label/value list
     const detailRows = [
-        ['Type',     getWaterType(tags),           'type'],
-        ['Access',   getAccessText(tags),           'access'],
-        ['Fee',      getFeeText(tags),              'coin'],
-        ...(tags.bottle        ? [['Bottle',   getBottleText(tags),          'bottle'  ]] : []),
-        ...(tags.indoor        ? [['Indoor',   formatTagValue(tags.indoor),  'indoor'  ]] : []),
-        ...(tags.opening_hours ? [['Hours',    tags.opening_hours,           'clock'   ]] : []),
-        ...(tags.operator      ? [['Operator', tags.operator,                'operator']] : []),
-    ].map(([label, value, icon]) => `
-        <div class="popupDetail">
-            <span>${popupIcon(icon)}${escapeHtml(label)}</span>
-            <strong>${escapeHtml(value)}</strong>
-        </div>
-    `).join('');
+        ['Type',     getWaterType(tags)],
+        ['Access',   getAccessText(tags)],
+        ['Fee',      getFeeText(tags)],
+        ...(tags.bottle        ? [['Bottle',   getBottleText(tags)          ]] : []),
+        ...(tags.indoor        ? [['Indoor',   formatTagValue(tags.indoor)  ]] : []),
+        ...(tags.opening_hours ? [['Hours',    tags.opening_hours           ]] : []),
+        ...(tags.operator      ? [['Operator', tags.operator                ]] : []),
+    ].map(([label, value]) =>
+        `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`
+    ).join('');
+
+    // Inline water drop icon — no external image needed, no sizing issues
+    const dropSvg = `<svg class="popupDropIcon" width="22" height="26" viewBox="0 0 20 24" fill="currentColor" aria-hidden="true"><path d="M10 1C6 6 2 11 2 15a8 8 0 0 0 16 0c0-4-4-9-8-14Z"/></svg>`;
 
     return `
         <article class="waterPopup">
             <header class="popupHeader">
-                <img src="images/water-pin-icon.svg" alt="" aria-hidden="true" width="72" height="80">
+                ${dropSvg}
                 <div>
                     <strong>${escapeHtml(formatSiteName(tags))}</strong>
                     <span>${escapeHtml(getPopupSubtitle(tags))}</span>
                 </div>
             </header>
-            <div class="popupHighlights" aria-label="Water source highlights">
-                <span>${popupIcon('coin')}${escapeHtml(getFeeText(tags))}</span>
-                <span>${popupIcon('access')}${escapeHtml(getAccessText(tags))}</span>
-                ${tags.bottle ? `<span>${popupIcon('bottle')}${escapeHtml(getBottleText(tags))}</span>` : ''}
-            </div>
-            <div class="popupDetails">
-                ${detailRows}
-            </div>
-            <div class="popupCoordinates">
-                ${popupIcon('pin')}
-                ${position.lat.toFixed(5)}, ${position.lon.toFixed(5)}
-            </div>
+            <dl class="popupDetails">${detailRows}</dl>
             <div class="popupActions" aria-label="Water source actions">
                 <a href="https://www.openstreetmap.org/?mlat=${position.lat}&mlon=${position.lon}#map=18/${position.lat}/${position.lon}" target="_blank" rel="noopener">
                     ${popupIcon('map')}View map
                 </a>
                 <a href="https://www.google.com/maps/dir/?api=1&destination=${position.lat},${position.lon}" target="_blank" rel="noopener">
-                    <img src="images/directions-route.svg" alt="" width="24" height="24">Directions
+                    <img src="images/directions-route.svg" alt="" width="13" height="13">Directions
                 </a>
                 <a href="${osmElementUrl}" target="_blank" rel="noopener">
-                    ${popupIcon('pin')}OSM record
+                    ${popupIcon('pin')}OSM
                 </a>
             </div>
-            <p class="popupNote">${popupIcon('info')}<span>Community data from OpenStreetMap. May need local verification.</span></p>
         </article>
     `;
 }
