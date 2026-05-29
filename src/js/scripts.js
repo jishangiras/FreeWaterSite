@@ -332,40 +332,32 @@ function popupIcon(name) {
 
 function buildPopupContent(element, tags, position) {
     const osmElementUrl = getOpenStreetMapElementUrl(element);
-    const placeDescription = getPlaceDescription(tags);
-    const placeContext = getPlaceContext(tags, position);
-    const usefulDetails = [
-        ['Type', getWaterType(tags), 'type'],
-        ['Access', getAccessText(tags), 'access'],
-        ['Fee', getFeeText(tags), 'coin'],
-        ...(tags.bottle ? [['Bottle', getBottleText(tags), 'bottle']] : []),
-        ...(tags.indoor ? [['Indoor', formatTagValue(tags.indoor), 'indoor']] : []),
-        ...(tags.opening_hours ? [['Hours', tags.opening_hours, 'clock']] : []),
-        ...(tags.operator ? [['Operator', tags.operator, 'operator']] : []),
-    ];
 
-    const detailRows = usefulDetails
-        .map(([label, value, icon]) => `
-            <div class="popupDetail">
-                <span>${popupIcon(icon)}${escapeHtml(label)}</span>
-                <strong>${escapeHtml(value)}</strong>
-            </div>
-        `)
-        .join('');
+    // Compact details list — only rows that have real data
+    const detailRows = [
+        ['Type',     getWaterType(tags),           'type'],
+        ['Access',   getAccessText(tags),           'access'],
+        ['Fee',      getFeeText(tags),              'coin'],
+        ...(tags.bottle        ? [['Bottle',   getBottleText(tags),          'bottle'  ]] : []),
+        ...(tags.indoor        ? [['Indoor',   formatTagValue(tags.indoor),  'indoor'  ]] : []),
+        ...(tags.opening_hours ? [['Hours',    tags.opening_hours,           'clock'   ]] : []),
+        ...(tags.operator      ? [['Operator', tags.operator,                'operator']] : []),
+    ].map(([label, value, icon]) => `
+        <div class="popupDetail">
+            <span>${popupIcon(icon)}${escapeHtml(label)}</span>
+            <strong>${escapeHtml(value)}</strong>
+        </div>
+    `).join('');
 
     return `
         <article class="waterPopup">
             <header class="popupHeader">
-                <img src="images/water-pin-icon.svg" alt="" aria-hidden="true">
+                <img src="images/water-pin-icon.svg" alt="" aria-hidden="true" width="72" height="80">
                 <div>
                     <strong>${escapeHtml(formatSiteName(tags))}</strong>
                     <span>${escapeHtml(getPopupSubtitle(tags))}</span>
                 </div>
             </header>
-            <div class="popupSummary" aria-label="Water source summary">
-                <p>${popupIcon('type')}<span>${escapeHtml(placeDescription)}</span></p>
-                <p>${popupIcon('pin')}<span>${escapeHtml(placeContext)}</span></p>
-            </div>
             <div class="popupHighlights" aria-label="Water source highlights">
                 <span>${popupIcon('coin')}${escapeHtml(getFeeText(tags))}</span>
                 <span>${popupIcon('access')}${escapeHtml(getAccessText(tags))}</span>
@@ -374,7 +366,6 @@ function buildPopupContent(element, tags, position) {
             <div class="popupDetails">
                 ${detailRows}
             </div>
-            <p class="popupNote">${popupIcon('info')}<span>Community data from OpenStreetMap. Details may need local verification.</span></p>
             <div class="popupCoordinates">
                 ${popupIcon('pin')}
                 ${position.lat.toFixed(5)}, ${position.lon.toFixed(5)}
@@ -384,12 +375,13 @@ function buildPopupContent(element, tags, position) {
                     ${popupIcon('map')}View map
                 </a>
                 <a href="https://www.google.com/maps/dir/?api=1&destination=${position.lat},${position.lon}" target="_blank" rel="noopener">
-                    <img src="images/directions-route.svg" alt="">Directions
+                    <img src="images/directions-route.svg" alt="" width="24" height="24">Directions
                 </a>
                 <a href="${osmElementUrl}" target="_blank" rel="noopener">
                     ${popupIcon('pin')}OSM record
                 </a>
             </div>
+            <p class="popupNote">${popupIcon('info')}<span>Community data from OpenStreetMap. May need local verification.</span></p>
         </article>
     `;
 }
@@ -406,6 +398,15 @@ function addMarker(element) {
         const html = buildPopupContent(element, tags, position);
         if (isMobile()) {
             openWaterSheet(html);
+            // Pan so the marker is centred in the visible area above the bottom sheet.
+            // The sheet occupies roughly the bottom 55% of the viewport on mobile.
+            // Target: put the marker at ~25% from the top of the screen.
+            const markerPt  = map.latLngToContainerPoint([position.lat, position.lon]);
+            const targetY   = Math.round(window.innerHeight * 0.28);
+            const deltaY    = markerPt.y - targetY;
+            if (Math.abs(deltaY) > 30) {
+                map.panBy([0, deltaY], { animate: true, duration: 0.28 });
+            }
         } else {
             if (!marker.getPopup()) {
                 marker.bindPopup(html, {

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Directions">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" role="img" aria-label="Directions">
   <path fill="#18324F" d="M6.5 4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm11 11a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z"/>
   <path fill="#2685E8" d="M8.8 6.5a1.2 1.2 0 0 1 1.2-1.2h3.3a4.4 4.4 0 0 1 0 8.8H11a2 2 0 1 0 0 4h3.5a1.2 1.2 0 1 1 0 2.4H11a4.4 4.4 0 1 1 0-8.8h2.3a2 2 0 1 0 0-4H10a1.2 1.2 0 0 1-1.2-1.2Z"/>
 </svg>
