@@ -140,10 +140,11 @@ function closeMissionModal() {
     missionToggle.setAttribute('aria-expanded', 'false');
     missionModal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('mission-open');
-    // Wait for transition before hiding
-    missionModal.addEventListener('transitionend', () => {
-        if (!missionModal.classList.contains('is-open')) missionModal.hidden = true;
-    }, { once: true });
+    // Set hidden after the opacity transition (200ms). Also add a setTimeout
+    // fallback because transitionend can fail to fire in headless environments.
+    const hide = () => { if (!missionModal.classList.contains('is-open')) missionModal.hidden = true; };
+    missionModal.addEventListener('transitionend', hide, { once: true });
+    setTimeout(hide, 350);
 }
 
 // --- Water bottom sheet ---
@@ -168,13 +169,17 @@ function closeWaterSheet() {
     const token = ++sheetCloseToken;
     waterSheet.classList.remove('is-open');
     waterSheet.setAttribute('aria-hidden', 'true');
-    waterSheet.addEventListener('transitionend', () => {
-        // Only hide if no openWaterSheet() was called since we started closing
+    // Only hide if no openWaterSheet() was called since we started closing.
+    // Also add a setTimeout fallback because transitionend can fail to fire
+    // in headless environments (e.g. CI).
+    const hide = () => {
         if (token === sheetCloseToken && !waterSheet.classList.contains('is-open')) {
             waterSheet.hidden = true;
             waterSheetContent.innerHTML = '';
         }
-    }, { once: true });
+    };
+    waterSheet.addEventListener('transitionend', hide, { once: true });
+    setTimeout(hide, 500);
 }
 
 function setAutocompleteOpen(isOpen) {
